@@ -4,7 +4,7 @@ uint8_t i2c_data[14];                         /*criei uma variavel com buffer de
 double accX, accY, accZ;                      /*Essas variaveis servem para guardar os valores da MPU*/
 double gyroX, gyroY, gyroZ;
 
-#define delay_sensor = 100
+#define delay_sensor 100
 
 uint32_t timer;
 
