@@ -1,12 +1,25 @@
-#include <Wire.h>                             /*Essa bilioteca serve para eu me comunicar via i2C*/
+#include <Wire.h> /*Essa bilioteca serve para eu me comunicar via i2C*/
+#include <Kalman.h>
 
 uint8_t i2c_data[14];                         /*criei uma variavel com buffer de 14 posições, ai temos 14 posições de uint8_t*/
+
 double accX, accY, accZ;                      /*Essas variaveis servem para guardar os valores da MPU*/
 double gyroX, gyroY, gyroZ;
 
 #define delay_sensor 100
 
 uint32_t timer;
+
+Kalman KalmanX;
+Kalman KalmanY;
+Kalman KalmanZ;
+
+double KalAngleX;
+double KalAngleY;
+double KalAngleZ;
+
+double gyroXangle;
+double gyroYangle;
 
 void setup(){
 
@@ -38,9 +51,27 @@ void setup(){
     }
 
    delay(delay_sensor);                        /*esse delay serve parao sensor estabilizar os valores lidos*/
-   
 
-   timer = micros();
+    /* 1 - Leitura dos dados de Acc XYZ */
+  while(i2cRead(0x3B, i2c_data, 14));
+
+  /* 2 - Organizar os dados de Acc XYZ */
+  accX = (int16_t)((i2c_data[0] << 8) | i2c_data[1]); // ([ MSB ] [ LSB ])
+  accY = (int16_t)((i2c_data[2] << 8) | i2c_data[3]); // ([ MSB ] [ LSB ])
+  accZ = (int16_t)((i2c_data[4] << 8) | i2c_data[5]); // ([ MSB ] [ LSB ])
+
+  /* 3 - Calculo de Pitch e Roll */  
+  double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;
+  double roll  =  atan(accY/sqrt(accX * accX + accZ * accZ)) * RAD_TO_DEG;
+
+  /* 4 - Inicialização do Filtro de Kalman XY */
+  KalmanX.setAngle(roll);
+  KalmanY.setAngle(pitch);
+
+  gyroXangle = roll;
+  gyroYangle = pitch;
+  
+  timer = micros();
 
 }
 void loop(){
@@ -55,7 +86,8 @@ void loop(){
   gyroX = (int16_t)((i2c_data[8] << 8) | i2c_data[9]); // ([ MSB ] [ LSB ])
   gyroY = (int16_t)((i2c_data[10] << 8) | i2c_data[11]); // ([ MSB ] [ LSB ])
   gyroZ = (int16_t)((i2c_data[12] << 8) | i2c_data[13]); // ([ MSB ] [ LSB ])
-
+  
+  /*
   Serial.print("AccXYZ"); Serial.print("\t");
   Serial.print(accX); Serial.print("\n");
   Serial.print(accY); Serial.print("\t");
@@ -64,7 +96,28 @@ void loop(){
   Serial.print(gyroX); Serial.print("\t");
   Serial.print(gyroY); Serial.print("\t");
   Serial.print(gyroZ); Serial.print("\n");
+  */
+  
+  /********************** Filtro de Kalman *************************/
+  
+  /* Calculo do Delta Time */
+  double dt = (double)(micros() - timer)/1000000;
+  timer = micros();
 
+  double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;
+  double roll = atan(accY/sqrt(accX * accX + accZ * accZ)) * RAD_TO_DEG;
+
+  /* Convertendo de Rad/Segundo para Graus/Segundo Calculo da Taxa angular baseado no Giroscópio */
+  gyroXangle = gyroX / 131.0; //deg/s
+  gyroYangle = gyroY / 131.0; //deg/s
+
+  /* Estimativa de Ângulo nos Eixos X e Y usando Filtro de Kalman */
+  KalAngleX = KalmanX.getAngle(roll, gyroXangle, dt);
+  KalAngleY = KalmanY.getAngle(pitch, gyroYangle, dt);
+
+  /* Mensagens de Debug para verificação dos resultados obtidos com Filtro de Kalman e Calculos dos Angulos com os Acelerômetros */
+  Serial.print(KalAngleY); Serial.print("\n"); //Angulo estimado com o filtro de Kalman
+  Serial.print(pitch); Serial.print("\t"); //Angulo Calculado com os dados de aceleração da MPU6050
 }
 //==============================================================================
 const uint8_t IMUAddress = 0x68; 
