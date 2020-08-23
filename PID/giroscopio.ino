@@ -1,5 +1,5 @@
-#include <Wire.h> /*Essa bilioteca serve para eu me comunicar via i2C*/
-#include <Kalman.h>
+#include <Wire.h>                             /*Essa biblioteca serve para eu me comunicar via i2C*/
+#include <Kalman.h>                           /*Essa biblioteca serve para eu adicionar o filtro de kalman que nos ajuda a dar uma estimativa melhor dos ângulos,para termos melhor precisão*/
 
 uint8_t i2c_data[14];                         /*criei uma variavel com buffer de 14 posições, ai temos 14 posições de uint8_t*/
 
@@ -10,15 +10,15 @@ double gyroX, gyroY, gyroZ;
 
 uint32_t timer;
 
-Kalman KalmanX;
+Kalman KalmanX;                               /*3 Instâncias  que servem para calcular os valores dos ângulos de x,y e z*/
 Kalman KalmanY;
 Kalman KalmanZ;
 
-double KalAngleX;
+double KalAngleX;                             /*Essas variaveis servem para receber os valores dos ângulo que foi calculado anteriormente ou seja irar receber os ângulos estimados em x,y e z*/
 double KalAngleY;
 double KalAngleZ;
 
-double gyroXangle;
+double gyroXangle;                            /*Para termos uma estimativa de ângulos utilizando os valores de pitch e de roll,juntando os valores dos ângulos que o acelerômetro calcula para ter melhor precisão na estimativa*/
 double gyroYangle;
 
 void setup(){
@@ -50,21 +50,21 @@ void setup(){
      }
     }
 
-   delay(delay_sensor);                        /*esse delay serve parao sensor estabilizar os valores lidos*/
+   delay(delay_sensor);                       /*esse delay serve parao sensor estabilizar os valores lidos*/
 
-    /* 1 - Leitura dos dados de Acc XYZ */
-  while(i2cRead(0x3B, i2c_data, 14));
+                                                
+  while(i2cRead(0x3B, i2c_data, 14));         /*Leitura dos dados de Acc XYZ */
 
-  /* 2 - Organizar os dados de Acc XYZ */
-  accX = (int16_t)((i2c_data[0] << 8) | i2c_data[1]); // ([ MSB ] [ LSB ])
+                                              /* Organizar os dados de Acc XYZ */
+  accX = (int16_t)((i2c_data[0] << 8) | i2c_data[1]); // ([ MSB ] [ LSB ])      
   accY = (int16_t)((i2c_data[2] << 8) | i2c_data[3]); // ([ MSB ] [ LSB ])
   accZ = (int16_t)((i2c_data[4] << 8) | i2c_data[5]); // ([ MSB ] [ LSB ])
 
-  /* 3 - Calculo de Pitch e Roll */  
-  double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;
+                                               
+  double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;        /* Calculo de Pitch e Roll,esse calculo são os valores de ângulos que o proprio acelerômetro calcula,pitch é a inclinacão do eixo Y e roll do X */ 
   double roll  =  atan(accY/sqrt(accX * accX + accZ * accZ)) * RAD_TO_DEG;
 
-  /* 4 - Inicialização do Filtro de Kalman XY */
+                                              /*Inicialização do Filtro de Kalman XY */
   KalmanX.setAngle(roll);
   KalmanY.setAngle(pitch);
 
@@ -77,8 +77,9 @@ void setup(){
 void loop(){
   
  while(i2cRead(0X3B, i2c_data, 14));
+ 
   /*Aceleração*/
-  accX = (int16_t)((i2c_data[0] << 8) | i2c_data[1]); // ([ MSB ] [ LSB ])
+  accX = (int16_t)((i2c_data[0] << 8) | i2c_data[1]); // ([ MSB ] [ LSB ])   /*Variavel que vai guardar os valores de aceleração e de giro nos 3 eixos:x,y e z*/
   accY = (int16_t)((i2c_data[2] << 8) | i2c_data[3]); // ([ MSB ] [ LSB ])
   accZ = (int16_t)((i2c_data[4] << 8) | i2c_data[5]); // ([ MSB ] [ LSB ])   
 
@@ -91,7 +92,7 @@ void loop(){
   Serial.print("AccXYZ"); Serial.print("\t");
   Serial.print(accX); Serial.print("\n");
   Serial.print(accY); Serial.print("\t");
-  Serial.print(accZ); Serial.print("\n");
+  Serial.print(accZ); Serial.print("\n");                              /*Isso serve somente para observar graficamente que o giroscopio esta recebendo os valores conforme ele gira e acelera
   Serial.print("GiroXYZ"); Serial.print("\t");
   Serial.print(gyroX); Serial.print("\t");
   Serial.print(gyroY); Serial.print("\t");
@@ -101,7 +102,7 @@ void loop(){
   /********************** Filtro de Kalman *************************/
   
   /* Calculo do Delta Time */
-  double dt = (double)(micros() - timer)/1000000;
+  double dt = (double)(micros() - timer)/1000000;         /*Tempo que demorou para executarmos o loop inteiro e voltar no mesmo ponto*/
   timer = micros();
 
   double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;
@@ -115,19 +116,17 @@ void loop(){
   KalAngleX = KalmanX.getAngle(roll, gyroXangle, dt);
   KalAngleY = KalmanY.getAngle(pitch, gyroYangle, dt);
 
-  /* Mensagens de Debug para verificação dos resultados obtidos com Filtro de Kalman e Calculos dos Angulos com os Acelerômetros */
-  Serial.print(KalAngleY); Serial.print("\n"); //Angulo estimado com o filtro de Kalman
-  Serial.print(pitch); Serial.print("\t"); //Angulo Calculado com os dados de aceleração da MPU6050
+  /*Feito todo o processo de estimativa de valores com o filtro de kalman é esperado que tenha melhor linearidade nos valores de inclinaçao e de giro,para que isso facilite na calibração para o equlibrio do Echo*/
 }
 //==============================================================================
 const uint8_t IMUAddress = 0x68; 
 const uint16_t I2C_TIMEOUT = 1000; 
 
-uint8_t i2cWrite(uint8_t registerAddress, uint8_t data, bool sendStop) {
-  return i2cWrite(registerAddress, &data, 1, sendStop); // Returns 0 on success
+uint8_t i2cWrite(uint8_t registerAddress, uint8_t data, bool sendStop) {                   /*quando é chamado a função i2cWrite com 3 argumentos somente essa parte vai ser chamada*/
+  return i2cWrite(registerAddress, &data, 1, sendStop); // Retorna 0 com sucesso
 }
 
-uint8_t i2cWrite(uint8_t registerAddress, uint8_t *data, uint8_t length, bool sendStop) {
+uint8_t i2cWrite(uint8_t registerAddress, uint8_t *data, uint8_t length, bool sendStop) {  /*quando é passado 4 argumenos é chamado essa parte*/
   Wire.beginTransmission(IMUAddress);
   Wire.write(registerAddress);
   Wire.write(data, length);
