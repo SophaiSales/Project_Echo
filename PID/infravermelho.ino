@@ -1,4 +1,4 @@
-#include <IRremote.h>
+ #include <IRremote.h>
 #define portInfra 11    //definiçao da porta do infracermelho no arduino
 
 IRrecv recInfra(portInfra);    //classe para localizar o pino do arduino
