@@ -24,15 +24,15 @@ void setup () {
 void frente (){
   digitalWrite(ent1Motor1,LOW); //definiçao para virar par 
   digitalWrite(ent2Motor1,HIGH);
-  digitalWrite(ent1Motor2,LOW); //definiçao para virar par 
-  digitalWrite(ent2Motor2,HIGH);
+  digitalWrite(ent1Motor2,HIGH); //definiçao para virar par 
+  digitalWrite(ent2Motor2,LOW);
   delay(2000);    //definiçao de tempo
   }
 void pratras (){
   digitalWrite(ent1Motor1, HIGH); //definiçao para virar pra 
-  digitalWrite(ent2Motor1, LOW );
-  digitalWrite(ent1Motor2, HIGH ); //definiçao para virar pra 
-  digitalWrite(ent2Motor2, LOW );
+  digitalWrite(ent2Motor1, LOW);
+  digitalWrite(ent1Motor2, LOW); //definiçao para virar pra 
+  digitalWrite(ent2Motor2, HIGH);
   delay (2000);    //definiçao de tempo
   }
 void parar (){
