@@ -23,13 +23,13 @@ double gyroYangle;
 
 void setup(){
 
- Serial.begin(9600);                          /*para verificar os valores no monitor serial e com velocidade de 9600 que é a velocidade que o arduino traalha melhor*/
+ Serial.begin(115200);                          /*para verificar os valores no monitor serial e com velocidade de 9600 que é a velocidade que o arduino traalha melhor*/
  Wire.begin();
 
  #if ARDUINO >= 157
-   Wire.setClock(4000000UL);                  /* frequencia de 400KHZ*/
+   Wire.setClock(400000UL);                  /* frequencia de 400KHZ*/
  #else
-   TWBR = ((F_CPU/4000000UL) - 16 / 2;        /*frequencia do i2 de 400kHz,fiz de novo porque dependendo da versão o wire.setClock da um erro*/
+   TWBR = ((F_CPU/400000UL) - 16 / 2;        /*frequencia do i2 de 400kHz,fiz de novo porque dependendo da versão o wire.setClock da um erro*/
  #endif
                                               /*nessas posições da i2c_data eu carreguei com esses seguintes valores para configurar o giroscopio*/
   i2c_data[0] = 7;                            /*para essa configuração utilezei o datasheet do MPU de forma que colocando esses valores na memoria 0x19*/
@@ -72,7 +72,8 @@ void setup(){
   gyroYangle = pitch;
   
   timer = micros();
-
+  init_inframotores();
+  
 }
 void loop(){
   
@@ -104,7 +105,7 @@ void loop(){
   /* Calculo do Delta Time */
   double dt = (double)(micros() - timer)/1000000;         /*Tempo que demorou para executarmos o loop inteiro e voltar no mesmo ponto*/
   timer = micros();
-
+   
   double pitch = atan(accX/sqrt(accY * accY + accZ * accZ)) * RAD_TO_DEG;
   double roll = atan(accY/sqrt(accX * accX + accZ * accZ)) * RAD_TO_DEG;
 
@@ -116,6 +117,11 @@ void loop(){
   KalAngleX = KalmanX.getAngle(roll, gyroXangle, dt);
   KalAngleY = KalmanY.getAngle(pitch, gyroYangle, dt);
 
+  Serial.print(KalAngleY); Serial.print("\n");
+  Serial.print(pitch); Serial.print("\t");
+  double  res = Compute(KalAngleY);
+  derecMotores (-100);
+  
   /*Feito todo o processo de estimativa de valores com o filtro de kalman é esperado que tenha melhor linearidade nos valores de inclinaçao e de giro,para que isso facilite na calibração para o equlibrio do Echo*/
 }
 //==============================================================================

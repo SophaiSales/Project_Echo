@@ -1,48 +1,42 @@
-#include <IRremote.h>
-#define portInfra   7    //definiçao da porta do infracermelho no arduino
-#define gndInfra    8     // definiçao de porta 0
-#define vccInfra    9    // definiçao de porta 1
+//#include <IRremote.h>
+//#define portInfra   7    //definiçao da porta do infracermelho no arduino
+//#define gndInfra    8     // definiçao de porta 0
+//#define vccInfra    9    // definiçao de porta 1
 
 #define  ent1Motor1  3   //pino1 de entrada da ponteH do motor1
-#define  ent2Motor1  4   //pino2 de entrada da ponteH do motor1 
-#define  ent1Motor2  5   //pino1 de entrada da ponteH do motor2
-#define  ent2Motor2  6   //pino2 de entrada da ponteH do motor2
+#define  ent2Motor1  9   //pino2 de entrada da ponteH do motor1 
+#define  ent1Motor2  10   //pino1 de entrada da ponteH do motor2
+#define  ent2Motor2  11   //pino2 de entrada da ponteH do motor2
 
-IRrecv recInfra(portInfra );    //classe para localizar o pino do arduino
-decode_results sinal ;    //valor do sinal que ele recebe do infravermelho
+//IRrecv recInfra(portInfra );    //classe para localizar o pino do arduino
+//decode_results sinal ;    //valor do sinal que ele recebe do infravermelho
 
-void setup () {
+void init_inframotores() {
   pinMode(ent1Motor1, OUTPUT);
   pinMode(ent2Motor1, OUTPUT);
   pinMode(ent1Motor2, OUTPUT);
   pinMode(ent2Motor2, OUTPUT);
-  pinMode(gndInfra, OUTPUT );
-  pinMode(vccInfra, OUTPUT );
-  Serial.begin(9600 );   //ver valor lido
-  recInfra.enableIRIn();    //iniciar recepitor infravermelho
+  //pinMode(gndInfra, OUTPUT );
+  //pinMode(vccInfra, OUTPUT );
+  //Serial.begin(9600 );   //ver valor lido
+  //recInfra.enableIRIn();    //iniciar recepitor infravermelho
 }
-void frente (){
-  digitalWrite(ent1Motor1,LOW); //definiçao para virar par 
-  digitalWrite(ent2Motor1,HIGH);
-  digitalWrite(ent1Motor2,HIGH); //definiçao para virar par 
-  digitalWrite(ent2Motor2,LOW);
-  delay(2000);    //definiçao de tempo
-  }
-void pratras (){
-  digitalWrite(ent1Motor1, HIGH); //definiçao para virar pra 
-  digitalWrite(ent2Motor1, LOW);
-  digitalWrite(ent1Motor2, LOW); //definiçao para virar pra 
-  digitalWrite(ent2Motor2, HIGH);
-  delay (2000);    //definiçao de tempo
-  }
-void parar (){
-  digitalWrite(ent1Motor1, LOW); //definiçao par parar 
-  digitalWrite(ent2Motor1, LOW);
-  digitalWrite(ent1Motor2, LOW); //definiçao par parar 
-  digitalWrite(ent2Motor2, LOW);
-  delay(2000);    //definiçao de tempo
+void derecMotores(double comando){
+  if(comando > 0){                               // se o comando for maior que 0 o robo anda pra frente 
+   analogWrite(ent2Motor2, abs(comando));        //motor2 andando para frente 
+   analogWrite(ent2Motor1, 0);                   //motor1 andando pra tras
+   analogWrite(ent1Motor2, 0);                   //motor2 andando para tras
+   analogWrite(ent1Motor1, abs(comando));        //motor1 andando pra frente
+    }else{                                       // se o comando for manor que 0 o robo anda pra tras
+   analogWrite(ent2Motor2, 0);                   //motor2 andando para frente 
+   analogWrite(ent2Motor1, abs(comando));        //motor1 andando pra tras
+   analogWrite(ent1Motor2, abs(comando));        //motor2 andando para tras
+   analogWrite(ent1Motor1, 0);                   //motor1 andando pra frente
+      }
+ 
 }
-void result (){
+
+/*void result (){
 //se indentificar o valor lido reservar o valor
   if(recInfra.decode(&sinal)){
     switch(sinal.value){
@@ -62,4 +56,4 @@ void loop() {
   digitalWrite(gndInfra, 0);
   digitalWrite(vccInfra, 1);
   result();
-}
+}*/
