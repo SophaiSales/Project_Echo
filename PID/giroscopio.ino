@@ -119,8 +119,9 @@ void loop(){
 
   Serial.print(KalAngleY); Serial.print("\n");
   Serial.print(pitch); Serial.print("\t");
-  double  res = Compute(KalAngleY);
-  derecMotores (-100);
+  
+  double res = Compute(KalAngleY);
+  derecMotores(res);
   
   /*Feito todo o processo de estimativa de valores com o filtro de kalman é esperado que tenha melhor linearidade nos valores de inclinaçao e de giro,para que isso facilite na calibração para o equlibrio do Echo*/
 }
