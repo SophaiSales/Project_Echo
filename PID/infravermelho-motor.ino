@@ -1,25 +1,25 @@
-//#include <IRremote.h>
-//#define portInfra   7    //definiçao da porta do infracermelho no arduino
-//#define gndInfra    8     // definiçao de porta 0
-//#define vccInfra    9    // definiçao de porta 1
+#include <IRremote.h>
+#define portInfra   6     //definiçao da porta do infracermelho no arduino
+#define gndInfra    7     // definiçao de porta 0
+#define vccInfra    8     // definiçao de porta 1
 
-#define  ent1Motor1  3   //pino1 de entrada da ponteH do motor1
-#define  ent2Motor1  9   //pino2 de entrada da ponteH do motor1 
+#define  ent1Motor1  3    //pino1 de entrada da ponteH do motor1
+#define  ent2Motor1  9    //pino2 de entrada da ponteH do motor1 
 #define  ent1Motor2  10   //pino1 de entrada da ponteH do motor2
 #define  ent2Motor2  11   //pino2 de entrada da ponteH do motor2
 
-//IRrecv recInfra(portInfra );    //classe para localizar o pino do arduino
-//decode_results sinal ;    //valor do sinal que ele recebe do infravermelho
+IRrecv recInfra(portInfra );    //classe para localizar o pino do arduino
+decode_results sinal ;          //valor do sinal que ele recebe do infravermelho
 
 void init_inframotores() {
   pinMode(ent1Motor1, OUTPUT);
   pinMode(ent2Motor1, OUTPUT);
   pinMode(ent1Motor2, OUTPUT);
   pinMode(ent2Motor2, OUTPUT);
-  //pinMode(gndInfra, OUTPUT );
-  //pinMode(vccInfra, OUTPUT );
-  //Serial.begin(9600 );   //ver valor lido
-  //recInfra.enableIRIn();    //iniciar recepitor infravermelho
+  pinMode(gndInfra, OUTPUT );
+  pinMode(vccInfra, OUTPUT );
+  Serial.begin(9600 );   //ver valor lido
+  recInfra.enableIRIn();    //iniciar recepitor infravermelho
 }
 void derecMotores(double comando){
   if(comando > 0){                               // se o comando for maior que 0 o robo anda pra frente 
