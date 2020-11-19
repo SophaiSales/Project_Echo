@@ -18,6 +18,7 @@ void init_inframotores() {
   pinMode(ent2Motor2, OUTPUT);
   pinMode(gndInfra, OUTPUT );
   pinMode(vccInfra, OUTPUT );
+  pinMode(portInfra,INPUT);
   Serial.begin(9600 );   //ver valor lido
   recInfra.enableIRIn();    //iniciar recepitor infravermelho
 }
@@ -30,24 +31,22 @@ void derecMotores(double comando){
     }else{                                       // se o comando for manor que 0 o robo anda pra tras
    analogWrite(ent2Motor2, 0);                   //motor2 andando para frente 
    analogWrite(ent2Motor1, abs(comando));        //motor1 andando pra tras
-   analogWrite(ent1Motor2, abs(comando));        //motor2 andando para tras
+   analogWrite(ent2Motor1, abs(comando));        //motor2 andando para tras
    analogWrite(ent1Motor1, 0);                   //motor1 andando pra frente
       }
  
 }
 
-/*void result (){
+void result (){
 //se indentificar o valor lido reservar o valor
   if(recInfra.decode(&sinal)){
     switch(sinal.value){
       case 0xE0E006F9://valor do botao precionado em hex para frente 
-        frente();
+        ent2Motor2, ent1Motor1;
       break;
       case 0xE0E08679://valor do botao precionado em hex pratras 
-        pratras();
+        ent2Motor1,ent2Motor1 ;
       break;
-      case 0xE0E016E9://valor do botao precionado em hex para parar
-        parar();
       }
     recInfra.resume();    // continuar lendo
     }
@@ -56,4 +55,4 @@ void loop() {
   digitalWrite(gndInfra, 0);
   digitalWrite(vccInfra, 1);
   result();
-}*/
+}
